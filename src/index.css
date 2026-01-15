@@ -50,6 +50,9 @@ All colors MUST be HSL.
     --chart-increase: 145 60% 45%;
     --chart-decrease: 0 70% 55%;
     --chart-base: 235 65% 50%;
+    --chart-tornado-min: 235 65% 35%;
+    --chart-tornado-max: 0 0% 100%;
+    --chart-tornado-label: 0 80% 45%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 220 30% 20%;
