@@ -181,7 +181,7 @@ export function FilterBar({ variant = "summary", filters, onFilterChange, horizo
       {/* Export Button */}
       <Button 
         variant="outline" 
-        className="ml-auto h-8 px-4 border-2 border-foreground text-foreground font-medium hover:bg-muted"
+        className="ml-auto h-8 px-4 bg-blue-900 text-white font-medium hover:bg-white hover:text-blue-900"
       >
         Export Data
       </Button>

@@ -64,6 +64,9 @@ export default {
           "tab-inactive": "hsl(var(--dashboard-tab-inactive))",
           "table-header": "hsl(var(--dashboard-table-header))",
           "table-header-foreground": "hsl(var(--dashboard-table-header-foreground))",
+            tab: {
+            active: "#0B2A4A", // dark blue
+          },
         },
         chart: {
           primary: "hsl(var(--chart-primary))",

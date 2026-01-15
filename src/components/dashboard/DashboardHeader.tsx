@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import ProcLogo from "@/assets/proc-logo.png";
 
 interface DashboardHeaderProps {
   activeTab: string;
@@ -13,9 +14,11 @@ export function DashboardHeader({ activeTab, onTabChange }: DashboardHeaderProps
       <div className="flex items-center gap-8">
         {/* Page Title with Company Logo Placeholder */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-muted border border-border rounded flex items-center justify-center text-xs text-muted-foreground font-medium">
-            Logo
-          </div>
+            <img
+              src={ProcLogo}
+              alt="ProcDNA Logo"
+              className="w-12 h-12 object-contain mr-6"
+            />
           <h1 className="text-2xl font-bold text-foreground">{activeTab}</h1>
         </div>
         
@@ -42,8 +45,8 @@ export function DashboardHeader({ activeTab, onTabChange }: DashboardHeaderProps
             className={cn(
               "px-6 py-2 text-sm font-medium rounded-sm transition-colors",
               activeTab === tab
-                ? "bg-dashboard-tab-active text-primary-foreground"
-                : "bg-dashboard-tab-inactive text-foreground hover:bg-muted"
+                ? "bg-blue-900 text-primary-foreground"
+                : "bg-white text-foreground hover:bg-blue-900 hover:text-white"
             )}
           >
             {tab}

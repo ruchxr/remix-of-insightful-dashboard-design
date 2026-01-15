@@ -296,7 +296,7 @@ export function SummaryTab() {
         <div className="bg-card rounded border border-border overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-dashboard-table-header text-dashboard-table-header-foreground">
+              <tr className="bg-blue-900 text-dashboard-table-header-foreground">
                 <th className="px-3 py-2 text-left font-semibold sticky left-0 bg-dashboard-table-header"></th>
                 {tableMonths.map((month) => (
                   <th key={month} className="px-3 py-2 text-center font-semibold whitespace-nowrap">
