@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import ProcLogo from "@/assets/proc-logo.png";
+import TableauLogo from "@/assets/tableau.png";
 
 interface DashboardHeaderProps {
   activeTab: string;
@@ -23,17 +24,11 @@ export function DashboardHeader({ activeTab, onTabChange }: DashboardHeaderProps
         </div>
         
         {/* Tableau Logo Placeholder */}
-        <div className="flex items-center gap-1">
-          <div className="grid grid-cols-2 gap-0.5">
-            <div className="w-2.5 h-2.5 bg-orange-500 rounded-sm" />
-            <div className="w-2.5 h-2.5 bg-primary rounded-sm" />
-            <div className="w-2.5 h-2.5 bg-primary rounded-sm" />
-            <div className="w-2.5 h-2.5 bg-orange-500 rounded-sm" />
-          </div>
-          <span className="text-lg font-light tracking-wide text-muted-foreground ml-1">
-            t<span className="text-orange-500">a</span>bleau
-          </span>
-        </div>
+        <img
+            src={TableauLogo}
+            alt="Tableau Logo"
+            className="w-28 h-8 object-contain mr-6"
+          />
       </div>
 
       {/* Tab Navigation */}

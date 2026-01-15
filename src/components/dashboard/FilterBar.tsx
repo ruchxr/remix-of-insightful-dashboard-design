@@ -85,7 +85,7 @@ export function FilterBar({ variant = "summary", filters, onFilterChange, horizo
               <SelectItem value="1l">1L</SelectItem>
               <SelectItem value="2l">2L</SelectItem>
               <SelectItem value="3l">3L</SelectItem>
-              <SelectItem value="4l">4L</SelectItem>
+              <SelectItem value="4l">4L+</SelectItem>
             </SelectContent>
           </Select>
         </div>

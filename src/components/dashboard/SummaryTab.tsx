@@ -9,7 +9,7 @@ const getLineMultiplier = (line: string): number => {
     case "1l": return 1.0;
     case "2l": return 0.75;
     case "3l": return 0.55;
-    case "4l": return 0.35;
+    case "4l+": return 0.35;
     default: return 1.0; // "all"
   }
 };

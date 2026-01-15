@@ -41,7 +41,7 @@ const sensitivityDataByLine: Record<string, { name: string; min: number; max: nu
     { name: "Treatment Rate", min: -80, max: 138 },
     { name: "Diagnosis Rate", min: -78, max: 125 },
   ],
-  "4l": [
+  "4l+": [
     { name: "GTN", min: -150, max: 160 },
     { name: "Price", min: -52, max: 100 },
     { name: "Compliance Rate", min: -25, max: 48 },
