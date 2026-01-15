@@ -1,14 +1,7 @@
 import { FilterBar } from "./FilterBar";
 import { useFilters } from "@/hooks/useFilters";
-import { useMemo, useState } from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine, LabelList } from "recharts";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useMemo } from "react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, ReferenceLine } from "recharts";
 
 // Sample sensitivity data for tornado chart - varies by line
 const sensitivityDataByLine: Record<string, { name: string; min: number; max: number }[]> = {
@@ -60,17 +53,35 @@ const sensitivityDataByLine: Record<string, { name: string; min: number; max: nu
 };
 
 export function SensitivityTab() {
-  const { filters, updateFilter, horizonOptions } = useFilters("summary");
-  const [selectedYear, setSelectedYear] = useState("2025");
+  const { filters, updateFilter, horizonOptions, getDisplayHorizon } = useFilters("summary");
 
-  // Get data based on selected line filter
-  const sensitivityData = sensitivityDataByLine[filters.line] || sensitivityDataByLine["all"];
+  // Get data based on selected line filter and apply horizon-based scaling
+  const sensitivityData = useMemo(() => {
+    const baseData = sensitivityDataByLine[filters.line] || sensitivityDataByLine["all"];
+    
+    // Apply a scaling factor based on horizon range for demo purposes
+    // Earlier start dates or longer ranges = larger sensitivity values
+    const startYear = filters.granularity === "annually" 
+      ? parseInt(filters.horizonStart) 
+      : parseInt(filters.horizonStart.split("-")[1]) + 2000;
+    const endYear = filters.granularity === "annually"
+      ? parseInt(filters.horizonEnd)
+      : parseInt(filters.horizonEnd.split("-")[1]) + 2000;
+    
+    const yearRange = endYear - startYear + 1;
+    const scaleFactor = 0.7 + (yearRange * 0.15); // Scale based on horizon length
+    
+    return baseData.map(item => ({
+      name: item.name,
+      min: Math.round(item.min * scaleFactor),
+      max: Math.round(item.max * scaleFactor),
+    }));
+  }, [filters.line, filters.horizonStart, filters.horizonEnd, filters.granularity]);
 
   // Transform data for diverging tornado chart (single bar per row)
   const chartData = useMemo(() => {
     return sensitivityData.map(item => ({
       name: item.name,
-      // For a diverging bar, we need the range from min to max
       min: item.min,
       max: item.max,
       range: item.max - item.min,
@@ -156,24 +167,11 @@ export function SensitivityTab() {
       
       <div className="flex-1 p-6 bg-background overflow-auto">
         <div className="bg-card rounded border border-border p-6">
-          {/* Header with title and year selector */}
+          {/* Header with title */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-foreground">
-              Sensitivity Analysis - Jun'25
+              Sensitivity Analysis - {getDisplayHorizon()}
             </h2>
-            <Select value={selectedYear} onValueChange={setSelectedYear}>
-              <SelectTrigger className="w-24 h-8 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="2025">2025</SelectItem>
-                <SelectItem value="2026">2026</SelectItem>
-                <SelectItem value="2027">2027</SelectItem>
-                <SelectItem value="2028">2028</SelectItem>
-                <SelectItem value="2029">2029</SelectItem>
-                <SelectItem value="2030">2030</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           {/* Tornado Chart */}
