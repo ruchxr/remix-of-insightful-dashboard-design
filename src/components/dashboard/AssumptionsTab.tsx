@@ -104,6 +104,15 @@ export function AssumptionsTab() {
       filteredData = filteredData.filter(row => row.scenario === "Nov'25");
     }
 
+    // Filter by line (lot)
+    if (filters.line !== "all") {
+      const lineLabel = filters.line.toUpperCase();
+      filteredData = filteredData.map(row => ({
+        ...row,
+        lot: row.lot === "1L" ? lineLabel : row.lot,
+      }));
+    }
+
     return { tableData: filteredData, tableMonths: months };
   }, [filters]);
 

@@ -3,6 +3,17 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { useFilters, monthlyHorizonOptions } from "@/hooks/useFilters";
 import { useMemo } from "react";
 
+// Line multiplier for different treatment lines
+const getLineMultiplier = (line: string): number => {
+  switch (line) {
+    case "1l": return 1.0;
+    case "2l": return 0.75;
+    case "3l": return 0.55;
+    case "4l": return 0.35;
+    default: return 1.0; // "all"
+  }
+};
+
 // Base monthly data for different brands
 const baseChartData = {
   "brand-a": {
@@ -169,16 +180,23 @@ export function SummaryTab() {
       for (let year = startYear; year <= endYear; year++) {
         const yearData = metricData.filter(d => d.month.includes(year.toString().slice(-2)));
         if (yearData.length > 0) {
-          const avgJun = Math.round(yearData.reduce((sum, d) => sum + d.jun25, 0) / yearData.length);
-          const avgNov = Math.round(yearData.reduce((sum, d) => sum + d.nov25, 0) / yearData.length);
+          // Apply line multiplier for demo purposes
+          const lineMultiplier = getLineMultiplier(filters.line);
+          const avgJun = Math.round(yearData.reduce((sum, d) => sum + d.jun25, 0) / yearData.length * lineMultiplier);
+          const avgNov = Math.round(yearData.reduce((sum, d) => sum + d.nov25, 0) / yearData.length * lineMultiplier);
           annualData.push({ month: year.toString(), jun25: avgJun, nov25: avgNov });
         }
       }
       filteredData = annualData;
       months = annualData.map(d => d.month);
     } else {
-      // Filter by horizon range
-      filteredData = metricData.slice(startIdx, endIdx + 1);
+      // Filter by horizon range and apply line multiplier
+      const lineMultiplier = getLineMultiplier(filters.line);
+      filteredData = metricData.slice(startIdx, endIdx + 1).map(d => ({
+        ...d,
+        jun25: Math.round(d.jun25 * lineMultiplier),
+        nov25: Math.round(d.nov25 * lineMultiplier),
+      }));
       months = filteredData.map(d => d.month);
     }
 
