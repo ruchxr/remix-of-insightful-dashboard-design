@@ -111,7 +111,7 @@ const getBarColor = (type: string) => {
 };
 
 export function WaterfallTab() {
-  const { filters, updateFilter, horizonOptions, getBrandLabel, getMetricLabel } = useFilters("waterfall");
+  const { filters, updateFilter, horizonOptions, getBrandLabel, getMetricLabel, getDisplayHorizon } = useFilters("waterfall");
 
   const { waterfallData, processedData, yDomain } = useMemo(() => {
     const brandData = baseWaterfallData[filters.brand as keyof typeof baseWaterfallData] || baseWaterfallData["brand-a"];
@@ -121,18 +121,30 @@ export function WaterfallTab() {
     const scenarioKey = `${filters.scenarioFrom}-${filters.scenarioTo}` as keyof typeof metricData;
     const data = metricData[scenarioKey] || metricData["jun25-nov25"];
 
+    // Apply horizon-based scaling for demo
+    const startMonth = filters.horizonStart;
+    const endMonth = filters.horizonEnd;
+    const monthsCount = horizonOptions.findIndex(o => o.value === endMonth) - 
+                        horizonOptions.findIndex(o => o.value === startMonth) + 1;
+    const scaleFactor = 0.8 + (Math.min(monthsCount, 12) * 0.02); // Scale based on horizon length
+
+    const scaledData = data.map(item => ({
+      ...item,
+      value: Math.round(item.value * scaleFactor * 10) / 10
+    }));
+
     // Calculate cumulative positions for waterfall effect
-    const processed = data.map((item, index) => {
+    const processed = scaledData.map((item, index) => {
       if (index === 0) {
         return { ...item, start: 0, displayValue: item.value };
       }
-      if (index === data.length - 1) {
+      if (index === scaledData.length - 1) {
         return { ...item, start: 0, displayValue: item.value };
       }
       
-      let cumSum = data[0].value;
+      let cumSum = scaledData[0].value;
       for (let i = 1; i < index; i++) {
-        cumSum += data[i].value;
+        cumSum += scaledData[i].value;
       }
       
       if (item.type === "decrease") {
@@ -142,17 +154,17 @@ export function WaterfallTab() {
     });
 
     // Calculate Y-axis domain
-    const allValues = data.map(d => d.value);
+    const allValues = scaledData.map(d => d.value);
     const maxVal = Math.max(...allValues.map(Math.abs));
     const minDomain = Math.floor((Math.min(...allValues) - 20) / 10) * 10;
     const maxDomain = Math.ceil((maxVal + 30) / 10) * 10;
 
     return { 
-      waterfallData: data, 
+      waterfallData: scaledData, 
       processedData: processed,
       yDomain: [Math.max(0, minDomain), maxDomain] as [number, number]
     };
-  }, [filters]);
+  }, [filters, horizonOptions]);
 
   const getScenarioLabel = (scenario: string | undefined) => {
     switch (scenario) {
@@ -174,7 +186,7 @@ export function WaterfallTab() {
       <div className="flex-1 p-6 bg-background overflow-auto">
         <div className="bg-card rounded border border-border p-6">
           <h2 className="text-xl font-semibold text-center text-foreground mb-6">
-            Bridge Analysis – {getBrandLabel()} - {getMetricLabel()} ({getScenarioLabel(filters.scenarioFrom)} vs {getScenarioLabel(filters.scenarioTo)})
+            Bridge Analysis – {getBrandLabel()} - {getMetricLabel()} ({getScenarioLabel(filters.scenarioFrom)} vs {getScenarioLabel(filters.scenarioTo)}) | {getDisplayHorizon()}
           </h2>
           
           <ResponsiveContainer width="100%" height={400}>
