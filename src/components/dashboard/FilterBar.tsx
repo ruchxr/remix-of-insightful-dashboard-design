@@ -13,9 +13,10 @@ interface FilterBarProps {
   filters: FilterState;
   onFilterChange: (key: keyof FilterState, value: string) => void;
   horizonOptions: { value: string; label: string }[];
+  onExport?: () => void;
 }
 
-export function FilterBar({ variant = "summary", filters, onFilterChange, horizonOptions }: FilterBarProps) {
+export function FilterBar({ variant = "summary", filters, onFilterChange, horizonOptions, onExport }: FilterBarProps) {
   return (
     <div className="flex items-center gap-4 px-6 py-4 bg-card border-b border-border flex-wrap">
       {/* Brand Filter */}
@@ -184,6 +185,7 @@ export function FilterBar({ variant = "summary", filters, onFilterChange, horizo
       <Button 
         variant="outline" 
         className="ml-auto h-8 px-4 bg-blue-900 text-white font-medium hover:bg-white hover:text-blue-900"
+        onClick={onExport}
       >
         Export Data
       </Button>
