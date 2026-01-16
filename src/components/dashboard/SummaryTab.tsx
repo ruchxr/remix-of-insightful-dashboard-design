@@ -10,7 +10,9 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useFilters, monthlyHorizonOptions } from "@/hooks/useFilters";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 // Line multiplier for different treatment lines
 const getLineMultiplier = (line: string): number => {
@@ -191,6 +193,33 @@ export function SummaryTab() {
     getBrandLabel,
     getMetricLabel,
   } = useFilters("summary");
+  
+  const chartRef = useRef<HTMLDivElement>(null);
+
+  const handleExportPDF = async () => {
+    const element = chartRef.current;
+    if (!element) return;
+
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`summary-${getBrandLabel()}-${getMetricLabel()}-${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    }
+  };
 
   const { chartData, tableData, tableMonths } = useMemo(() => {
     const brandData =
@@ -283,9 +312,10 @@ export function SummaryTab() {
         filters={filters}
         onFilterChange={updateFilter}
         horizonOptions={horizonOptions}
+        onExport={handleExportPDF}
       />
 
-      <div className="flex-1 p-6 bg-background overflow-auto">
+      <div className="flex-1 p-6 bg-background overflow-auto" ref={chartRef}>
         {/* Chart Section */}
         <div className="bg-card rounded border border-border p-6 mb-6">
           <h2 className="text-xl font-semibold text-center text-foreground mb-4">

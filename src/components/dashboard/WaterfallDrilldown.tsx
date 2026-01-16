@@ -1,7 +1,9 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell, ReferenceLine } from "recharts";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { useMemo } from "react";
+import { ArrowLeft, Download } from "lucide-react";
+import { useMemo, useRef } from "react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 interface WaterfallDrilldownProps {
   onBack: () => void;
@@ -106,6 +108,33 @@ const getBarColor = (type: string) => {
 };
 
 export function WaterfallDrilldown({ onBack, filters, getBrandLabel }: WaterfallDrilldownProps) {
+  const chartRef = useRef<HTMLDivElement>(null);
+
+  const handleExportPDF = async () => {
+    const element = chartRef.current;
+    if (!element) return;
+
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`demand-breakdown-${getBrandLabel()}-${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    }
+  };
+
   const { processedData, yDomain } = useMemo(() => {
     const brandData = demandBreakdownData[filters.brand as keyof typeof demandBreakdownData] || demandBreakdownData["brand-a"];
     const scenarioKey = `${filters.scenarioFrom}-${filters.scenarioTo}` as keyof typeof brandData;
@@ -144,7 +173,7 @@ export function WaterfallDrilldown({ onBack, filters, getBrandLabel }: Waterfall
     };
   }, [filters]);
 
-  const getScenarioLabel = (scenario: string) => {
+  const getScenarioLabel = (scenario: string | undefined) => {
     switch (scenario) {
       case "jun25": return "Jun'25";
       case "nov25": return "Nov'25";
@@ -165,7 +194,7 @@ export function WaterfallDrilldown({ onBack, filters, getBrandLabel }: Waterfall
   return (
     <div className="flex flex-col h-full">
       {/* Back button header */}
-      <div className="px-6 py-4 bg-card border-b border-border">
+      <div className="px-6 py-4 bg-card border-b border-border flex items-center justify-between">
         <Button 
           variant="ghost" 
           onClick={onBack}
@@ -174,9 +203,17 @@ export function WaterfallDrilldown({ onBack, filters, getBrandLabel }: Waterfall
           <ArrowLeft className="h-4 w-4" />
           Back to Waterfall
         </Button>
+        <Button 
+          variant="outline" 
+          onClick={handleExportPDF}
+          className="h-8 px-4 bg-blue-900 text-white font-medium hover:bg-white hover:text-blue-900"
+        >
+          <Download className="h-4 w-4 mr-2" />
+          Export Data
+        </Button>
       </div>
       
-      <div className="flex-1 p-6 bg-background overflow-auto">
+      <div className="flex-1 p-6 bg-background overflow-auto" ref={chartRef}>
         <div className="bg-card rounded border border-border p-6" id="drilldown-chart">
           <h2 className="text-xl font-semibold text-center text-foreground mb-6">
             Bridge Analysis - {getIndicationLabel()} - ({getScenarioLabel(filters.scenarioFrom)} vs {getScenarioLabel(filters.scenarioTo)})
