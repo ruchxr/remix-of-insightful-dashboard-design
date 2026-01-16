@@ -236,7 +236,7 @@ export function WaterfallTab() {
       <div className="flex-1 p-6 bg-background overflow-auto">
         <div className="bg-card rounded border border-border p-6" ref={chartRef}>
           <h2 className="text-xl font-semibold text-center text-foreground mb-6">
-            Bridge Analysis – {getBrandLabel()} - {getMetricLabel()} ({getScenarioLabel(filters.scenarioFrom)} vs {getScenarioLabel(filters.scenarioTo)}) | {getDisplayHorizon()}
+            Bridge Analysis – {getBrandLabel()} - {getMetricLabel()} | {getDisplayHorizon()}
           </h2>
           
           <ResponsiveContainer width="100%" height={400}>
