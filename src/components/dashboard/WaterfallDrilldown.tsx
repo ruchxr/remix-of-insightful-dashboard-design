@@ -215,17 +215,27 @@ export function WaterfallDrilldown({ onBack, filters, getBrandLabel }: Waterfall
                 dataKey="displayValue" 
                 stackId="a"
                 radius={[2, 2, 0, 0]}
-                label={{
+label={{
                   position: 'top',
-                  formatter: (value: number, entry: any) => {
-                    const item = processedData.find(d => d.name === entry?.name);
-                    if (!item) return '';
-                    if (item.type === 'decrease') return `-$${value.toFixed(1)}`;
-                    return `$${value.toFixed(1)}`;
-                  },
-                  fill: 'hsl(var(--foreground))',
-                  fontSize: 11,
-                  fontWeight: 500
+                  content: ({ x, y, width, index }: any) => {
+                    const item = processedData[index];
+                    if (!item) return null;
+                    const displayText = item.type === 'decrease' 
+                      ? `-$${item.displayValue.toFixed(1)}` 
+                      : `$${item.displayValue.toFixed(1)}`;
+                    return (
+                      <text 
+                        x={x + width / 2} 
+                        y={y - 8} 
+                        textAnchor="middle" 
+                        fill="hsl(var(--foreground))"
+                        fontSize={11}
+                        fontWeight={500}
+                      >
+                        {displayText}
+                      </text>
+                    );
+                  }
                 }}
               >
                 {processedData.map((entry, index) => (
