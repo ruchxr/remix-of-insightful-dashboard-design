@@ -8,8 +8,8 @@ interface WaterfallDrilldownProps {
   filters: {
     brand: string;
     indication: string;
-    scenarioFrom: string;
-    scenarioTo: string;
+    scenarioFrom?: string;
+    scenarioTo?: string;
     horizonStart: string;
     horizonEnd: string;
   };
