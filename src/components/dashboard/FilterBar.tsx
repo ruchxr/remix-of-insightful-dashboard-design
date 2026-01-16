@@ -42,6 +42,8 @@ export function FilterBar({ variant = "summary", filters, onFilterChange, horizo
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="indication-a">Indication A</SelectItem>
+            <SelectItem value="indication-b">Indication B</SelectItem>
+            <SelectItem value="indication-c">Indication C</SelectItem>
             <SelectItem value="all">All</SelectItem>
           </SelectContent>
         </Select>
