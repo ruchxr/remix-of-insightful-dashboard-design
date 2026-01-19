@@ -1,16 +1,44 @@
 import { FilterBar } from "./FilterBar";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import { useFilters, monthlyHorizonOptions } from "@/hooks/useFilters";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 // Line multiplier for different treatment lines
 const getLineMultiplier = (line: string): number => {
   switch (line) {
-    case "1l": return 1.0;
-    case "2l": return 0.75;
-    case "3l": return 0.55;
-    case "4l+": return 0.35;
-    default: return 1.0; // "all"
+    case "1l":
+      return 1.0;
+    case "2l":
+      return 0.75;
+    case "3l":
+      return 0.55;
+    case "4l+":
+      return 0.35;
+    default:
+      return 1.0; // "all"
+  }
+};
+
+// Indication multiplier (A=base, B/C scale values for demo purposes)
+const getIndicationMultiplier = (indication: string): number => {
+  switch (indication) {
+    case "indication-b":
+      return 0.85;
+    case "indication-c":
+      return 0.65;
+    default:
+      return 1.0; // indication-a / all
   }
 };
 
@@ -157,59 +185,109 @@ const baseChartData = {
 };
 
 export function SummaryTab() {
-  const { filters, updateFilter, horizonOptions, getDisplayHorizon, getBrandLabel, getMetricLabel } = useFilters("summary");
+  const {
+    filters,
+    updateFilter,
+    horizonOptions,
+    getDisplayHorizon,
+    getBrandLabel,
+    getMetricLabel,
+  } = useFilters("summary");
+  
+  const chartRef = useRef<HTMLDivElement>(null);
 
-  // Filter and aggregate data based on filters
+  const handleExportPDF = async () => {
+    const element = chartRef.current;
+    if (!element) return;
+
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`summary-${getBrandLabel()}-${getMetricLabel()}-${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    }
+  };
+
   const { chartData, tableData, tableMonths } = useMemo(() => {
-    const brandData = baseChartData[filters.brand as keyof typeof baseChartData] || baseChartData["brand-a"];
-    const metricData = brandData[filters.metric as keyof typeof brandData] || brandData["net-revenue"];
+    const brandData =
+      baseChartData[filters.brand as keyof typeof baseChartData] ||
+      baseChartData["brand-a"];
+    const metricData =
+      brandData[filters.metric as keyof typeof brandData] ||
+      brandData["net-revenue"];
 
-    // Get month indices for filtering
-    const startIdx = monthlyHorizonOptions.findIndex(o => o.value === filters.horizonStart);
-    const endIdx = monthlyHorizonOptions.findIndex(o => o.value === filters.horizonEnd);
-    
+    const startIdx = monthlyHorizonOptions.findIndex(
+      (o) => o.value === filters.horizonStart
+    );
+    const endIdx = monthlyHorizonOptions.findIndex(
+      (o) => o.value === filters.horizonEnd
+    );
+
+    const lineMultiplier = getLineMultiplier(filters.line);
+    const indicationMultiplier = getIndicationMultiplier(filters.indication);
+    const multiplier = lineMultiplier * indicationMultiplier;
+
     let filteredData = metricData;
     let months: string[] = [];
 
     if (filters.granularity === "annually") {
-      // Aggregate to annual data
-      const startYear = parseInt(filters.horizonStart);
-      const endYear = parseInt(filters.horizonEnd);
+      const startYear = parseInt(filters.horizonStart, 10);
+      const endYear = parseInt(filters.horizonEnd, 10);
+
       const annualData: { month: string; jun25: number; nov25: number }[] = [];
-      
+
       for (let year = startYear; year <= endYear; year++) {
-        const yearData = metricData.filter(d => d.month.includes(year.toString().slice(-2)));
+        const yearSuffix = year.toString().slice(-2);
+        const yearData = metricData.filter((d) => d.month.includes(yearSuffix));
+
         if (yearData.length > 0) {
-          // Apply line multiplier for demo purposes
-          const lineMultiplier = getLineMultiplier(filters.line);
-          const avgJun = Math.round(yearData.reduce((sum, d) => sum + d.jun25, 0) / yearData.length * lineMultiplier);
-          const avgNov = Math.round(yearData.reduce((sum, d) => sum + d.nov25, 0) / yearData.length * lineMultiplier);
+          const avgJun = Math.round(
+            (yearData.reduce((sum, d) => sum + d.jun25, 0) / yearData.length) *
+              multiplier
+          );
+          const avgNov = Math.round(
+            (yearData.reduce((sum, d) => sum + d.nov25, 0) / yearData.length) *
+              multiplier
+          );
+
           annualData.push({ month: year.toString(), jun25: avgJun, nov25: avgNov });
         }
       }
+
       filteredData = annualData;
-      months = annualData.map(d => d.month);
+      months = annualData.map((d) => d.month);
     } else {
-      // Filter by horizon range and apply line multiplier
-      const lineMultiplier = getLineMultiplier(filters.line);
-      filteredData = metricData.slice(startIdx, endIdx + 1).map(d => ({
+      filteredData = metricData.slice(startIdx, endIdx + 1).map((d) => ({
         ...d,
-        jun25: Math.round(d.jun25 * lineMultiplier),
-        nov25: Math.round(d.nov25 * lineMultiplier),
+        jun25: Math.round(d.jun25 * multiplier),
+        nov25: Math.round(d.nov25 * multiplier),
       }));
-      months = filteredData.map(d => d.month);
+      months = filteredData.map((d) => d.month);
     }
 
-    // Generate table data based on scenario selection
     const unit = filters.metric === "net-revenue" ? "$" : "";
     const suffix = filters.metric === "market-share" ? "%" : "";
-    
-    let tableRows: Record<string, string[]> = {};
+
+    const tableRows: Record<string, string[]> = {};
+
     if (filters.scenario === "jun-nov" || filters.scenario === "jun25") {
-      tableRows["Jun'25"] = filteredData.map(d => `${unit}${d.jun25}${suffix}`);
+      tableRows["Jun'25"] = filteredData.map((d) => `${unit}${d.jun25}${suffix}`);
     }
     if (filters.scenario === "jun-nov" || filters.scenario === "nov25") {
-      tableRows["Nov'25"] = filteredData.map(d => `${unit}${d.nov25}${suffix}`);
+      tableRows["Nov'25"] = filteredData.map((d) => `${unit}${d.nov25}${suffix}`);
     }
 
     return { chartData: filteredData, tableData: tableRows, tableMonths: months };
@@ -219,7 +297,7 @@ export function SummaryTab() {
     if (filters.metric === "market-share") {
       return [0, 35];
     }
-    const allValues = chartData.flatMap(d => [d.jun25, d.nov25]);
+    const allValues = chartData.flatMap((d) => [d.jun25, d.nov25]);
     const max = Math.max(...allValues);
     return [0, Math.ceil(max / 10) * 10 + 10];
   }, [chartData, filters.metric]);
@@ -229,60 +307,69 @@ export function SummaryTab() {
 
   return (
     <div className="flex flex-col h-full">
-      <FilterBar 
-        variant="summary" 
-        filters={filters} 
+      <FilterBar
+        variant="summary"
+        filters={filters}
         onFilterChange={updateFilter}
         horizonOptions={horizonOptions}
+        onExport={handleExportPDF}
       />
-      
-      <div className="flex-1 p-6 bg-background overflow-auto">
+
+      <div className="flex-1 p-6 bg-background overflow-auto" ref={chartRef}>
         {/* Chart Section */}
         <div className="bg-card rounded border border-border p-6 mb-6">
           <h2 className="text-xl font-semibold text-center text-foreground mb-4">
-            {getMetricLabel()} {filters.metric === "net-revenue" ? "($M)" : "(%)"} - {getBrandLabel()} ({getDisplayHorizon()})
+            {getMetricLabel()} {filters.metric === "net-revenue" ? "($M)" : "(%)"} -{" "}
+            {getBrandLabel()} ({getDisplayHorizon()})
           </h2>
+
           <ResponsiveContainer width="100%" height={350}>
-            <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <LineChart
+              data={chartData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis 
-                dataKey="month" 
+              <XAxis
+                dataKey="month"
                 tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                 tickLine={{ stroke: "hsl(var(--border))" }}
               />
-              <YAxis 
-                tickFormatter={(value) => filters.metric === "market-share" ? `${value}%` : `$${value}`}
+              <YAxis
+                tickFormatter={(value) =>
+                  filters.metric === "market-share" ? `${value}%` : `$${value}`
+                }
                 tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                 tickLine={{ stroke: "hsl(var(--border))" }}
                 domain={yAxisDomain}
               />
-              <Tooltip 
+              <Tooltip
                 formatter={(value: number) => [
-                  filters.metric === "market-share" ? `${value}%` : `$${value}M`, 
-                  ""
+                  filters.metric === "market-share" ? `${value}%` : `$${value}M`,
+                  "",
                 ]}
-                contentStyle={{ 
+                contentStyle={{
                   backgroundColor: "hsl(var(--card))",
                   border: "1px solid hsl(var(--border))",
-                  borderRadius: "4px"
+                  borderRadius: "4px",
                 }}
               />
               <Legend />
+
               {showJun25 && (
-                <Line 
-                  type="monotone" 
-                  dataKey="jun25" 
-                  stroke="hsl(var(--chart-primary))" 
+                <Line
+                  type="monotone"
+                  dataKey="jun25"
+                  stroke="hsl(var(--chart-primary))"
                   strokeWidth={2}
                   dot={false}
                   name="Jun'25"
                 />
               )}
               {showNov25 && (
-                <Line 
-                  type="monotone" 
-                  dataKey="nov25" 
-                  stroke="hsl(var(--chart-secondary))" 
+                <Line
+                  type="monotone"
+                  dataKey="nov25"
+                  stroke="hsl(var(--chart-secondary))"
                   strokeWidth={2}
                   dot={false}
                   name="Nov'25"
@@ -299,7 +386,10 @@ export function SummaryTab() {
               <tr className="bg-blue-900 text-dashboard-table-header-foreground">
                 <th className="px-3 py-2 text-left font-semibold sticky left-0 bg-dashboard-table-header"></th>
                 {tableMonths.map((month) => (
-                  <th key={month} className="px-3 py-2 text-center font-semibold whitespace-nowrap">
+                  <th
+                    key={month}
+                    className="px-3 py-2 text-center font-semibold whitespace-nowrap"
+                  >
                     {month}
                   </th>
                 ))}
@@ -307,7 +397,10 @@ export function SummaryTab() {
             </thead>
             <tbody>
               {Object.entries(tableData).map(([scenario, values], idx) => (
-                <tr key={scenario} className={idx % 2 === 0 ? "bg-card" : "bg-muted/30"}>
+                <tr
+                  key={scenario}
+                  className={idx % 2 === 0 ? "bg-card" : "bg-muted/30"}
+                >
                   <td className="px-3 py-2 font-medium text-foreground sticky left-0 bg-inherit border-r border-border">
                     {scenario}
                   </td>

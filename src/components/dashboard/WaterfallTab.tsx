@@ -1,7 +1,10 @@
 import { FilterBar } from "./FilterBar";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from "recharts";
+import { WaterfallDrilldown } from "./WaterfallDrilldown";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell, ReferenceLine } from "recharts";
 import { useFilters } from "@/hooks/useFilters";
-import { useMemo } from "react";
+import { useMemo, useState, useRef } from "react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 // Base waterfall data for different brands and metrics
 const baseWaterfallData = {
@@ -112,6 +115,8 @@ const getBarColor = (type: string) => {
 
 export function WaterfallTab() {
   const { filters, updateFilter, horizonOptions, getBrandLabel, getMetricLabel, getDisplayHorizon } = useFilters("waterfall");
+  const [showDrilldown, setShowDrilldown] = useState(false);
+  const chartRef = useRef<HTMLDivElement>(null);
 
   const { waterfallData, processedData, yDomain } = useMemo(() => {
     const brandData = baseWaterfallData[filters.brand as keyof typeof baseWaterfallData] || baseWaterfallData["brand-a"];
@@ -174,6 +179,49 @@ export function WaterfallTab() {
     }
   };
 
+  const handleBarClick = (data: any) => {
+    // Only trigger drilldown for "Demand" (green increase) bar
+    if (data && data.name === "Demand" && data.type === "increase") {
+      setShowDrilldown(true);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    const element = chartRef.current;
+    if (!element) return;
+
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`waterfall-analysis-${getBrandLabel()}-${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    }
+  };
+
+  // Show drilldown view if active
+  if (showDrilldown) {
+    return (
+      <WaterfallDrilldown 
+        onBack={() => setShowDrilldown(false)}
+        filters={filters}
+        getBrandLabel={getBrandLabel}
+      />
+    );
+  }
+
   return (
     <div className="flex flex-col h-full">
       <FilterBar 
@@ -181,12 +229,13 @@ export function WaterfallTab() {
         filters={filters} 
         onFilterChange={updateFilter}
         horizonOptions={horizonOptions}
+        onExport={handleExportPDF}
       />
       
       <div className="flex-1 p-6 bg-background overflow-auto">
-        <div className="bg-card rounded border border-border p-6">
+        <div className="bg-card rounded border border-border p-6" ref={chartRef}>
           <h2 className="text-xl font-semibold text-center text-foreground mb-6">
-            Bridge Analysis – {getBrandLabel()} - {getMetricLabel()} ({getScenarioLabel(filters.scenarioFrom)} vs {getScenarioLabel(filters.scenarioTo)}) | {getDisplayHorizon()}
+            Bridge Analysis – {getBrandLabel()} - {getMetricLabel()} | {getDisplayHorizon()}
           </h2>
           
           <ResponsiveContainer width="100%" height={400}>
@@ -219,21 +268,37 @@ export function WaterfallTab() {
                 dataKey="displayValue" 
                 stackId="a"
                 radius={[2, 2, 0, 0]}
-                label={{
+                onClick={(data) => handleBarClick(data)}
+                cursor="pointer"
+label={{
                   position: 'top',
-                  formatter: (value: number) => {
-                    const item = processedData.find(d => d.displayValue === value);
-                    if (!item) return '';
-                    if (item.type === 'decrease') return `-$${value.toFixed(1)}`;
-                    return `$${value.toFixed(1)}`;
-                  },
-                  fill: 'hsl(var(--foreground))',
-                  fontSize: 12,
-                  fontWeight: 500
+                  content: ({ x, y, width, index }: any) => {
+                    const item = processedData[index];
+                    if (!item) return null;
+                    const displayText = item.type === 'decrease' 
+                      ? `-$${item.displayValue.toFixed(1)}` 
+                      : `$${item.displayValue.toFixed(1)}`;
+                    return (
+                      <text 
+                        x={x + width / 2} 
+                        y={y - 8} 
+                        textAnchor="middle" 
+                        fill="hsl(var(--foreground))"
+                        fontSize={12}
+                        fontWeight={500}
+                      >
+                        {displayText}
+                      </text>
+                    );
+                  }
                 }}
               >
                 {processedData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={getBarColor(entry.type)} />
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={getBarColor(entry.type)} 
+                    className={entry.name === "Demand" && entry.type === "increase" ? "hover:opacity-80 transition-opacity" : ""}
+                  />
                 ))}
               </Bar>
             </BarChart>
@@ -254,6 +319,11 @@ export function WaterfallTab() {
               <span className="text-sm text-foreground">Decrease</span>
             </div>
           </div>
+          
+          {/* Click hint */}
+          <p className="text-xs text-muted-foreground text-center mt-4">
+            Click on the "Demand" bar to see detailed breakdown
+          </p>
         </div>
       </div>
     </div>

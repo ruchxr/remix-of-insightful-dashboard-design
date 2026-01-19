@@ -1,7 +1,9 @@
 import { FilterBar } from "./FilterBar";
 import { useFilters } from "@/hooks/useFilters";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, ReferenceLine } from "recharts";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 // Sample sensitivity data for tornado chart - varies by line
 const sensitivityDataByLine: Record<string, { name: string; min: number; max: number }[]> = {
@@ -53,7 +55,33 @@ const sensitivityDataByLine: Record<string, { name: string; min: number; max: nu
 };
 
 export function SensitivityTab() {
-  const { filters, updateFilter, horizonOptions, getDisplayHorizon } = useFilters("summary");
+  const { filters, updateFilter, horizonOptions, getDisplayHorizon, getBrandLabel } = useFilters("summary");
+  const chartRef = useRef<HTMLDivElement>(null);
+
+  const handleExportPDF = async () => {
+    const element = chartRef.current;
+    if (!element) return;
+
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`sensitivity-analysis-${getBrandLabel()}-${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    }
+  };
 
   // Get data based on selected line filter and apply horizon-based scaling
   const sensitivityData = useMemo(() => {
@@ -163,9 +191,10 @@ export function SensitivityTab() {
         filters={filters} 
         onFilterChange={updateFilter}
         horizonOptions={horizonOptions}
+        onExport={handleExportPDF}
       />
       
-      <div className="flex-1 p-6 bg-background overflow-auto">
+      <div className="flex-1 p-6 bg-background overflow-auto" ref={chartRef}>
         <div className="bg-card rounded border border-border p-6">
           {/* Header with title */}
           <div className="flex items-center justify-between mb-6">
