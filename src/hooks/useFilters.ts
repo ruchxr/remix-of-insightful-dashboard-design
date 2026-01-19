@@ -6,12 +6,28 @@ export interface FilterState {
   metric: string;
   line: string;
   scenario: string;
+  scenarios: string[]; // Multi-select scenarios
   scenarioFrom?: string;
   scenarioTo?: string;
   granularity: string;
   horizonStart: string;
   horizonEnd: string;
 }
+
+export const metricOptions = [
+  { value: "net-revenue", label: "Net Revenue" },
+  { value: "market-share", label: "Market Share" },
+  { value: "compliance", label: "Compliance" },
+  { value: "dose-month", label: "Dose/Month" },
+  { value: "access-percent", label: "Access %" },
+  { value: "wac-price", label: "WAC Price" },
+  { value: "discount", label: "Discount" },
+];
+
+export const scenarioOptions = [
+  { value: "jun25", label: "Jun'25" },
+  { value: "nov25", label: "Nov'25" },
+];
 
 export const monthlyHorizonOptions = [
   { value: "jan-25", label: "Jan-25" },
@@ -52,6 +68,7 @@ export function useFilters(variant: "summary" | "assumptions" | "waterfall" = "s
     metric: variant === "waterfall" ? "total-demand" : "net-revenue",
     line: variant === "assumptions" ? "1l" : "all",
     scenario: "jun-nov",
+    scenarios: ["jun25", "nov25"], // Default to both scenarios selected
     scenarioFrom: "jun25",
     scenarioTo: "nov25",
     granularity: "monthly",
