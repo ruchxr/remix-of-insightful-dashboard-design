@@ -43,7 +43,7 @@ const getIndicationMultiplier = (indication: string): number => {
 };
 
 // Base monthly data for different brands
-const baseChartData = {
+const baseChartData: Record<string, Record<string, { month: string; jun25: number; nov25: number }[]>> = {
   "brand-a": {
     "net-revenue": [
       { month: "Jan-25", jun25: 26, nov25: 26 },
@@ -88,6 +88,116 @@ const baseChartData = {
       { month: "Jun-26", jun25: 22, nov25: 21 },
       { month: "Jul-26", jun25: 23, nov25: 22 },
       { month: "Aug-26", jun25: 24, nov25: 23 },
+    ],
+    "compliance": [
+      { month: "Jan-25", jun25: 85, nov25: 85 },
+      { month: "Feb-25", jun25: 85, nov25: 85 },
+      { month: "Mar-25", jun25: 85, nov25: 85 },
+      { month: "Apr-25", jun25: 85, nov25: 85 },
+      { month: "May-25", jun25: 85, nov25: 85 },
+      { month: "Jun-25", jun25: 85, nov25: 85 },
+      { month: "Jul-25", jun25: 85, nov25: 85 },
+      { month: "Aug-25", jun25: 85, nov25: 85 },
+      { month: "Sep-25", jun25: 85, nov25: 85 },
+      { month: "Oct-25", jun25: 85, nov25: 85 },
+      { month: "Nov-25", jun25: 85, nov25: 85 },
+      { month: "Dec-25", jun25: 85, nov25: 85 },
+      { month: "Jan-26", jun25: 85, nov25: 85 },
+      { month: "Feb-26", jun25: 85, nov25: 85 },
+      { month: "Mar-26", jun25: 85, nov25: 85 },
+      { month: "Apr-26", jun25: 85, nov25: 85 },
+      { month: "May-26", jun25: 85, nov25: 85 },
+      { month: "Jun-26", jun25: 85, nov25: 85 },
+      { month: "Jul-26", jun25: 85, nov25: 85 },
+      { month: "Aug-26", jun25: 85, nov25: 85 },
+    ],
+    "dose-month": [
+      { month: "Jan-25", jun25: 4.1, nov25: 4.1 },
+      { month: "Feb-25", jun25: 4.1, nov25: 4.1 },
+      { month: "Mar-25", jun25: 4.1, nov25: 4.1 },
+      { month: "Apr-25", jun25: 4.1, nov25: 4.1 },
+      { month: "May-25", jun25: 4.1, nov25: 4.1 },
+      { month: "Jun-25", jun25: 4.1, nov25: 4.1 },
+      { month: "Jul-25", jun25: 4.1, nov25: 4.1 },
+      { month: "Aug-25", jun25: 4.1, nov25: 4.1 },
+      { month: "Sep-25", jun25: 4.1, nov25: 4.1 },
+      { month: "Oct-25", jun25: 4.1, nov25: 4.1 },
+      { month: "Nov-25", jun25: 4.1, nov25: 4.1 },
+      { month: "Dec-25", jun25: 4.1, nov25: 4.1 },
+      { month: "Jan-26", jun25: 4.1, nov25: 4.1 },
+      { month: "Feb-26", jun25: 4.1, nov25: 4.1 },
+      { month: "Mar-26", jun25: 4.1, nov25: 4.1 },
+      { month: "Apr-26", jun25: 4.1, nov25: 4.1 },
+      { month: "May-26", jun25: 4.1, nov25: 4.1 },
+      { month: "Jun-26", jun25: 4.1, nov25: 4.1 },
+      { month: "Jul-26", jun25: 4.1, nov25: 4.1 },
+      { month: "Aug-26", jun25: 4.1, nov25: 4.1 },
+    ],
+    "access-percent": [
+      { month: "Jan-25", jun25: 100, nov25: 100 },
+      { month: "Feb-25", jun25: 100, nov25: 100 },
+      { month: "Mar-25", jun25: 100, nov25: 100 },
+      { month: "Apr-25", jun25: 100, nov25: 100 },
+      { month: "May-25", jun25: 100, nov25: 100 },
+      { month: "Jun-25", jun25: 100, nov25: 100 },
+      { month: "Jul-25", jun25: 100, nov25: 100 },
+      { month: "Aug-25", jun25: 100, nov25: 100 },
+      { month: "Sep-25", jun25: 100, nov25: 100 },
+      { month: "Oct-25", jun25: 100, nov25: 100 },
+      { month: "Nov-25", jun25: 100, nov25: 100 },
+      { month: "Dec-25", jun25: 100, nov25: 100 },
+      { month: "Jan-26", jun25: 100, nov25: 100 },
+      { month: "Feb-26", jun25: 100, nov25: 100 },
+      { month: "Mar-26", jun25: 100, nov25: 100 },
+      { month: "Apr-26", jun25: 100, nov25: 100 },
+      { month: "May-26", jun25: 100, nov25: 100 },
+      { month: "Jun-26", jun25: 100, nov25: 100 },
+      { month: "Jul-26", jun25: 100, nov25: 100 },
+      { month: "Aug-26", jun25: 100, nov25: 100 },
+    ],
+    "wac-price": [
+      { month: "Jan-25", jun25: 2513, nov25: 2513 },
+      { month: "Feb-25", jun25: 2513, nov25: 2513 },
+      { month: "Mar-25", jun25: 2513, nov25: 2513 },
+      { month: "Apr-25", jun25: 2513, nov25: 2513 },
+      { month: "May-25", jun25: 2513, nov25: 2513 },
+      { month: "Jun-25", jun25: 2513, nov25: 2513 },
+      { month: "Jul-25", jun25: 2564, nov25: 2564 },
+      { month: "Aug-25", jun25: 2564, nov25: 2564 },
+      { month: "Sep-25", jun25: 2564, nov25: 2564 },
+      { month: "Oct-25", jun25: 2564, nov25: 2564 },
+      { month: "Nov-25", jun25: 2564, nov25: 2564 },
+      { month: "Dec-25", jun25: 2564, nov25: 2564 },
+      { month: "Jan-26", jun25: 2615, nov25: 2615 },
+      { month: "Feb-26", jun25: 2615, nov25: 2615 },
+      { month: "Mar-26", jun25: 2615, nov25: 2615 },
+      { month: "Apr-26", jun25: 2615, nov25: 2615 },
+      { month: "May-26", jun25: 2615, nov25: 2615 },
+      { month: "Jun-26", jun25: 2615, nov25: 2615 },
+      { month: "Jul-26", jun25: 2667, nov25: 2667 },
+      { month: "Aug-26", jun25: 2667, nov25: 2667 },
+    ],
+    "discount": [
+      { month: "Jan-25", jun25: 20, nov25: 20 },
+      { month: "Feb-25", jun25: 20, nov25: 20 },
+      { month: "Mar-25", jun25: 20, nov25: 20 },
+      { month: "Apr-25", jun25: 20, nov25: 20 },
+      { month: "May-25", jun25: 20, nov25: 20 },
+      { month: "Jun-25", jun25: 20, nov25: 20 },
+      { month: "Jul-25", jun25: 19, nov25: 20 },
+      { month: "Aug-25", jun25: 19, nov25: 20 },
+      { month: "Sep-25", jun25: 19, nov25: 20 },
+      { month: "Oct-25", jun25: 19, nov25: 20 },
+      { month: "Nov-25", jun25: 19, nov25: 20 },
+      { month: "Dec-25", jun25: 19, nov25: 20 },
+      { month: "Jan-26", jun25: 20, nov25: 21 },
+      { month: "Feb-26", jun25: 20, nov25: 21 },
+      { month: "Mar-26", jun25: 20, nov25: 21 },
+      { month: "Apr-26", jun25: 20, nov25: 21 },
+      { month: "May-26", jun25: 20, nov25: 21 },
+      { month: "Jun-26", jun25: 20, nov25: 21 },
+      { month: "Jul-26", jun25: 21, nov25: 21 },
+      { month: "Aug-26", jun25: 21, nov25: 21 },
     ],
   },
   "brand-b": {
@@ -184,6 +294,9 @@ const baseChartData = {
   },
 };
 
+// Get default data for metrics not defined for a brand
+const getDefaultMetricData = () => baseChartData["brand-a"]["compliance"];
+
 export function SummaryTab() {
   const {
     filters,
@@ -221,13 +334,9 @@ export function SummaryTab() {
     }
   };
 
-  const { chartData, tableData, tableMonths } = useMemo(() => {
-    const brandData =
-      baseChartData[filters.brand as keyof typeof baseChartData] ||
-      baseChartData["brand-a"];
-    const metricData =
-      brandData[filters.metric as keyof typeof brandData] ||
-      brandData["net-revenue"];
+  const { chartData, tableData, tableMonths, metricUnit, metricSuffix } = useMemo(() => {
+    const brandData = baseChartData[filters.brand] || baseChartData["brand-a"];
+    const metricData = brandData[filters.metric] || getDefaultMetricData();
 
     const startIdx = monthlyHorizonOptions.findIndex(
       (o) => o.value === filters.horizonStart
@@ -272,14 +381,32 @@ export function SummaryTab() {
     } else {
       filteredData = metricData.slice(startIdx, endIdx + 1).map((d) => ({
         ...d,
-        jun25: Math.round(d.jun25 * multiplier),
-        nov25: Math.round(d.nov25 * multiplier),
+        jun25: Math.round(d.jun25 * multiplier * 10) / 10,
+        nov25: Math.round(d.nov25 * multiplier * 10) / 10,
       }));
       months = filteredData.map((d) => d.month);
     }
 
-    const unit = filters.metric === "net-revenue" ? "$" : "";
-    const suffix = filters.metric === "market-share" ? "%" : "";
+    // Determine units based on metric type
+    let unit = "";
+    let suffix = "";
+    switch (filters.metric) {
+      case "net-revenue":
+        unit = "$";
+        break;
+      case "market-share":
+      case "compliance":
+      case "access-percent":
+      case "discount":
+        suffix = "%";
+        break;
+      case "wac-price":
+        unit = "$";
+        break;
+      case "dose-month":
+        // No unit or suffix for dose/month
+        break;
+    }
 
     const tableRows: Record<string, string[]> = {};
 
@@ -291,15 +418,25 @@ export function SummaryTab() {
       tableRows["Nov'25"] = filteredData.map((d) => `${unit}${d.nov25}${suffix}`);
     }
 
-    return { chartData: filteredData, tableData: tableRows, tableMonths: months };
+    return { chartData: filteredData, tableData: tableRows, tableMonths: months, metricUnit: unit, metricSuffix: suffix };
   }, [filters]);
 
   const yAxisDomain = useMemo(() => {
-    if (filters.metric === "market-share") {
-      return [0, 35];
-    }
     const allValues = chartData.flatMap((d) => [d.jun25, d.nov25]);
+    const min = Math.min(...allValues);
     const max = Math.max(...allValues);
+    
+    // Handle different metric types with appropriate ranges
+    if (filters.metric === "market-share" || filters.metric === "compliance" || 
+        filters.metric === "access-percent" || filters.metric === "discount") {
+      return [0, Math.min(100, Math.ceil(max / 10) * 10 + 10)];
+    }
+    if (filters.metric === "wac-price") {
+      return [Math.floor(min / 100) * 100 - 100, Math.ceil(max / 100) * 100 + 100];
+    }
+    if (filters.metric === "dose-month") {
+      return [0, Math.ceil(max) + 1];
+    }
     return [0, Math.ceil(max / 10) * 10 + 10];
   }, [chartData, filters.metric]);
 
@@ -320,7 +457,7 @@ export function SummaryTab() {
         {/* Chart Section */}
         <div className="bg-card rounded border border-border p-6 mb-6">
           <h2 className="text-xl font-semibold text-center text-foreground mb-4">
-            {getMetricLabel()} {filters.metric === "net-revenue" ? "($M)" : "(%)"} -{" "}
+            {getMetricLabel()} {metricUnit && `(${metricUnit})`}{metricSuffix && `(${metricSuffix})`} -{" "}
             {getBrandLabel()} ({getDisplayHorizon()})
           </h2>
 
@@ -336,16 +473,14 @@ export function SummaryTab() {
                 tickLine={{ stroke: "hsl(var(--border))" }}
               />
               <YAxis
-                tickFormatter={(value) =>
-                  filters.metric === "market-share" ? `${value}%` : `$${value}`
-                }
+                tickFormatter={(value) => `${metricUnit}${value}${metricSuffix}`}
                 tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                 tickLine={{ stroke: "hsl(var(--border))" }}
                 domain={yAxisDomain}
               />
               <Tooltip
                 formatter={(value: number) => [
-                  filters.metric === "market-share" ? `${value}%` : `$${value}M`,
+                  `${metricUnit}${value}${metricSuffix}`,
                   "",
                 ]}
                 contentStyle={{
