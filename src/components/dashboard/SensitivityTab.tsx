@@ -1,7 +1,7 @@
 import { FilterBar } from "./FilterBar";
 import { useFilters } from "@/hooks/useFilters";
 import { useMemo, useRef } from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, ReferenceLine } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, ReferenceLine } from "recharts";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
@@ -126,7 +126,7 @@ export function SensitivityTab() {
     return [-Math.ceil(absMax / 100) * 100, Math.ceil(absMax / 100) * 100];
   }, [sensitivityData]);
 
-  // Custom bar with diverging effect
+  // Custom bar with diverging effect - lighter red for negative, lighter green for positive
   const CustomDivergingBar = (props: any) => {
     const { x, y, width, height, payload, background } = props;
     const chartWidth = background?.width || width;
@@ -142,21 +142,21 @@ export function SensitivityTab() {
     
     return (
       <g>
-        {/* Min bar (left of center) */}
+        {/* Min bar (left of center) - lighter red */}
         <rect
           x={minX}
           y={y}
           width={centerX - minX}
           height={height}
-          fill="hsl(235 65% 35%)"
+          fill="hsl(0 70% 70%)"
         />
-        {/* Max bar (right of center) */}
+        {/* Max bar (right of center) - lighter green */}
         <rect
           x={centerX}
           y={y}
           width={maxX - centerX}
           height={height}
-          fill="hsl(235 55% 50%)"
+          fill="hsl(142 50% 60%)"
         />
         {/* Min label */}
         <text
@@ -203,7 +203,7 @@ export function SensitivityTab() {
             </h2>
           </div>
 
-          {/* Tornado Chart */}
+          {/* Tornado Chart - No grid lines */}
           <ResponsiveContainer width="100%" height={400}>
             <BarChart
               data={chartData}
@@ -211,18 +211,18 @@ export function SensitivityTab() {
               margin={{ top: 20, right: 80, left: 100, bottom: 40 }}
               barCategoryGap="20%"
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
               <XAxis 
                 type="number"
                 domain={xDomain}
                 tickFormatter={(value) => `$${value}`}
                 tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                 tickLine={{ stroke: "hsl(var(--border))" }}
+                axisLine={{ stroke: "hsl(var(--border))" }}
               />
               <YAxis 
                 type="category"
                 dataKey="name"
-                tick={{ fontSize: 12, fill: "hsl(0 70% 45%)", fontWeight: 500 }}
+                tick={{ fontSize: 12, fill: "hsl(var(--foreground))", fontWeight: 500 }}
                 tickLine={false}
                 axisLine={false}
                 width={100}
@@ -238,15 +238,15 @@ export function SensitivityTab() {
             </BarChart>
           </ResponsiveContainer>
 
-          {/* Legend */}
+          {/* Legend - Updated colors */}
           <div className="flex justify-center gap-6 mt-4">
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: "hsl(235 65% 35%)" }}></div>
-              <span className="text-sm text-muted-foreground">Min</span>
+              <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: "hsl(0 70% 70%)" }}></div>
+              <span className="text-sm text-muted-foreground">Min (Negative)</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: "hsl(235 55% 50%)" }}></div>
-              <span className="text-sm text-muted-foreground">Max</span>
+              <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: "hsl(142 50% 60%)" }}></div>
+              <span className="text-sm text-muted-foreground">Max (Positive)</span>
             </div>
           </div>
         </div>

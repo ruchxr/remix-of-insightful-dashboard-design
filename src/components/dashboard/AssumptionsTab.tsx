@@ -210,11 +210,16 @@ export function AssumptionsTab() {
       }));
     }
 
-    // Filter by scenario
-    if (filters.scenario === "jun25") {
-      filteredData = filteredData.filter((row) => row.scenario === "Jun'25");
-    } else if (filters.scenario === "nov25") {
-      filteredData = filteredData.filter((row) => row.scenario === "Nov'25");
+    // Filter by selected scenarios (multi-select)
+    if (filters.scenarios.length > 0 && filters.scenarios.length < 2) {
+      const scenarioMap: Record<string, string> = {
+        "jun25": "Jun'25",
+        "nov25": "Nov'25"
+      };
+      const selectedScenario = scenarioMap[filters.scenarios[0]];
+      if (selectedScenario) {
+        filteredData = filteredData.filter((row) => row.scenario === selectedScenario);
+      }
     }
 
     // Filter by line (lot)

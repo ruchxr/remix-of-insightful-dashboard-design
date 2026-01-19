@@ -6,12 +6,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { FilterState } from "@/hooks/useFilters";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { FilterState, metricOptions, scenarioOptions } from "@/hooks/useFilters";
+import { ChevronDown } from "lucide-react";
 
 interface FilterBarProps {
   variant?: "summary" | "assumptions" | "waterfall";
   filters: FilterState;
-  onFilterChange: (key: keyof FilterState, value: string) => void;
+  onFilterChange: (key: keyof FilterState, value: string | string[]) => void;
   horizonOptions: { value: string; label: string }[];
   onExport?: () => void;
 }
@@ -67,8 +70,11 @@ export function FilterBar({ variant = "summary", filters, onFilterChange, horizo
               </>
             ) : (
               <>
-                <SelectItem value="net-revenue">Net Revenue</SelectItem>
-                <SelectItem value="market-share">Market Share, C...</SelectItem>
+                {metricOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
               </>
             )}
           </SelectContent>
@@ -120,16 +126,47 @@ export function FilterBar({ variant = "summary", filters, onFilterChange, horizo
             </Select>
           </div>
         ) : (
-          <Select value={filters.scenario} onValueChange={(v) => onFilterChange("scenario", v)}>
-            <SelectTrigger className="w-36 h-8 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="jun-nov">Jun'25, Nov'25</SelectItem>
-              <SelectItem value="jun25">Jun'25</SelectItem>
-              <SelectItem value="nov25">Nov'25</SelectItem>
-            </SelectContent>
-          </Select>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-40 h-8 text-sm justify-between font-normal">
+                <span className="truncate">
+                  {filters.scenarios.length === 0 
+                    ? "Select scenarios"
+                    : filters.scenarios.length === scenarioOptions.length
+                      ? "All Scenarios"
+                      : scenarioOptions
+                          .filter(o => filters.scenarios.includes(o.value))
+                          .map(o => o.label)
+                          .join(", ")}
+                </span>
+                <ChevronDown className="h-4 w-4 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-40 p-2 bg-popover z-50" align="start">
+              <div className="space-y-2">
+                {scenarioOptions.map((option) => (
+                  <div key={option.value} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={option.value}
+                      checked={filters.scenarios.includes(option.value)}
+                      onCheckedChange={(checked) => {
+                        const newScenarios = checked
+                          ? [...filters.scenarios, option.value]
+                          : filters.scenarios.filter(s => s !== option.value);
+                        onFilterChange("scenarios", newScenarios);
+                      }}
+                    />
+                    <label
+                      htmlFor={option.value}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      {option.label}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
         )}
       </div>
 

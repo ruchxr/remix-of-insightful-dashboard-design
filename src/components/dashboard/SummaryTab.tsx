@@ -283,10 +283,11 @@ export function SummaryTab() {
 
     const tableRows: Record<string, string[]> = {};
 
-    if (filters.scenario === "jun-nov" || filters.scenario === "jun25") {
+    // Use multi-select scenarios
+    if (filters.scenarios.includes("jun25")) {
       tableRows["Jun'25"] = filteredData.map((d) => `${unit}${d.jun25}${suffix}`);
     }
-    if (filters.scenario === "jun-nov" || filters.scenario === "nov25") {
+    if (filters.scenarios.includes("nov25")) {
       tableRows["Nov'25"] = filteredData.map((d) => `${unit}${d.nov25}${suffix}`);
     }
 
@@ -302,8 +303,8 @@ export function SummaryTab() {
     return [0, Math.ceil(max / 10) * 10 + 10];
   }, [chartData, filters.metric]);
 
-  const showJun25 = filters.scenario === "jun-nov" || filters.scenario === "jun25";
-  const showNov25 = filters.scenario === "jun-nov" || filters.scenario === "nov25";
+  const showJun25 = filters.scenarios.includes("jun25");
+  const showNov25 = filters.scenarios.includes("nov25");
 
   return (
     <div className="flex flex-col h-full">
