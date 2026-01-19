@@ -80,12 +80,12 @@ export function useFilters(variant: "summary" | "assumptions" | "waterfall" = "s
     return filters.granularity === "annually" ? annualHorizonOptions : monthlyHorizonOptions;
   }, [filters.granularity]);
 
-  const updateFilter = useCallback((key: keyof FilterState, value: string) => {
+  const updateFilter = useCallback((key: keyof FilterState, value: string | string[]) => {
     setFilters(prev => {
       const newFilters = { ...prev, [key]: value };
       
       // Reset horizon values when granularity changes
-      if (key === "granularity") {
+      if (key === "granularity" && typeof value === "string") {
         if (value === "annually") {
           newFilters.horizonStart = "2025";
           newFilters.horizonEnd = "2026";
@@ -118,12 +118,10 @@ export function useFilters(variant: "summary" | "assumptions" | "waterfall" = "s
   }, [filters.brand]);
 
   const getMetricLabel = useCallback(() => {
-    switch (filters.metric) {
-      case "net-revenue": return "Net Revenue";
-      case "market-share": return "Market Share";
-      case "total-demand": return "Total Demand";
-      default: return "Net Revenue";
-    }
+    const option = metricOptions.find(o => o.value === filters.metric);
+    if (option) return option.label;
+    if (filters.metric === "total-demand") return "Total Demand";
+    return "Net Revenue";
   }, [filters.metric]);
 
   const getScenarioLabel = useCallback(() => {
